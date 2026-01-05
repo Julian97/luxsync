@@ -99,14 +99,33 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
           
           // Skip if this is not an image file
           if (isImageFile(fileName)) {
-            // For now, we'll set placeholder dimensions - in a real implementation
-            // you might want to store dimensions in the file name or metadata
-            // In a real implementation, you might extract dimensions from the filename or metadata
-            // For example, if the filename contains dimensions like: image_800x600.jpg
+            // Extract dimensions from metadata or filename
             const dimensionMatch = fileName.match(/_(\d+)x(\d+)\./);
-            const width = dimensionMatch ? parseInt(dimensionMatch[1]) : 600; // Default width for 3:2 portrait
-            const height = dimensionMatch ? parseInt(dimensionMatch[2]) : 900; // Default height for 3:2 portrait
-                    
+            
+            // Default to 3:2 portrait orientation
+            let width = 600;
+            let height = 900;
+            
+            // If dimensions are in filename, use those
+            if (dimensionMatch) {
+              width = parseInt(dimensionMatch[1]);
+              height = parseInt(dimensionMatch[2]);
+            } else {
+              // Try to get dimensions from B2 metadata
+              try {
+                const metadata = await b2Service.getObjectMetadata(obj.Key);
+                
+                // Check if width and height are stored in B2 metadata
+                if (metadata.metadata && metadata.metadata.width && metadata.metadata.height) {
+                  width = parseInt(metadata.metadata.width);
+                  height = parseInt(metadata.metadata.height);
+                }
+              } catch (metadataError) {
+                console.error('Error fetching metadata for image:', obj.Key, metadataError);
+                // Use default dimensions if metadata fetch fails
+              }
+            }
+            
             photos.push({
               id: obj.Key, // Using the full key as ID
               gallery_id: galleryName,

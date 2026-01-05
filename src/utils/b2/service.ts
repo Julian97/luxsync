@@ -223,6 +223,32 @@ export class B2Service {
       throw error;
     }
   }
+  
+  /**
+   * Get object metadata for a specific file
+   */
+  async getObjectMetadata(key: string) {
+    try {
+      const { HeadObjectCommand } = await import("@aws-sdk/client-s3");
+      
+      const command = new HeadObjectCommand({
+        Bucket: B2_BUCKET_NAME,
+        Key: key,
+      });
+
+      const response = await this.client.send(command);
+      
+      return {
+        metadata: response.Metadata || {},
+        contentLength: response.ContentLength,
+        contentType: response.ContentType,
+        lastModified: response.LastModified,
+      };
+    } catch (error) {
+      console.error('Error getting object metadata from B2:', error);
+      throw error;
+    }
+  }
 }
 
 // Create a singleton instance
