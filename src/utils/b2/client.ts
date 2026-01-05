@@ -12,8 +12,8 @@ export const createB2Client = () => {
   }
   
   const client = new S3Client({
-    region: process.env.B2_REGION || 'eu-central-003', // Using your actual region
-    endpoint: process.env.B2_ENDPOINT!, // e.g., 'https://s3.us-west-004.backblazeb2.com'
+    region: 'us-west-004', // Using a standard AWS region that's compatible with B2
+    endpoint: process.env.B2_ENDPOINT!, // Your specific B2 endpoint
     credentials: {
       accessKeyId: process.env.B2_APPLICATION_KEY_ID!,
       secretAccessKey: process.env.B2_APPLICATION_KEY!,
