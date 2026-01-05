@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import MasonryGallery from '@/components/MasonryGallery';
+import PhotoModal from '@/components/modal/PhotoModal';
 import { Photo } from '@/types/database';
 import { getPhotosForGallery } from '@/utils/b2/gallery-parser';
 
@@ -9,6 +10,8 @@ export default function Home() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [currentGallery, setCurrentGallery] = useState<{ title: string; date: string } | null>(null);
 
   useEffect(() => {
     const fetchGalleriesAndPhotos = async () => {
@@ -20,6 +23,21 @@ export default function Home() {
         if (data.galleries && data.galleries.length > 0) {
           // Get photos for the first gallery via API route
           const firstGallery = data.galleries[0];
+          
+          // Extract gallery title and date
+          const dateMatch = firstGallery.folderName.match(/^([0-9]{4}-[0-9]{2}-[0-9]{2})\s+(.+)$/);
+          if (dateMatch) {
+            setCurrentGallery({
+              date: dateMatch[1],
+              title: dateMatch[2].trim()
+            });
+          } else {
+            setCurrentGallery({
+              date: new Date().toISOString().split('T')[0],
+              title: firstGallery.folderName
+            });
+          }
+          
           const photosResponse = await fetch(`/api/photos/gallery/${encodeURIComponent(firstGallery.folderName)}`);
           const photosData = await photosResponse.json();
           
@@ -43,9 +61,26 @@ export default function Home() {
   }, []);
 
   const handlePhotoClick = (photo: Photo) => {
-    console.log('Photo clicked:', photo);
-    // In a real app, this might open a modal or navigate to a detail page
-    alert(`Photo clicked: ${photo.id}`);
+    setSelectedPhoto(photo);
+  };
+
+  const handleModalClose = () => {
+    setSelectedPhoto(null);
+  };
+
+  const handleDownload = (photo: Photo) => {
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = photo.public_url;
+    link.download = photo.id.split('/').pop() || 'photo.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadGallery = () => {
+    // This would download all photos in the current gallery
+    alert('Gallery download functionality would be implemented here');
   };
 
   if (loading) {
@@ -69,7 +104,27 @@ export default function Home() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">LuxSync Gallery</h1>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold mb-2">LuxSync Gallery</h1>
+        {currentGallery && (
+          <>
+            <h2 className="text-2xl font-semibold text-gray-800">{currentGallery.title}</h2>
+            <p className="text-gray-600">{currentGallery.date}</p>
+          </>
+        )}
+        <div className="mt-4">
+          <button
+            onClick={handleDownloadGallery}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center mx-auto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download Gallery
+          </button>
+        </div>
+      </div>
+      
       {photos.length > 0 ? (
         <MasonryGallery photos={photos} onPhotoClick={handlePhotoClick} />
       ) : (
@@ -77,6 +132,14 @@ export default function Home() {
           <p>No photos found in the gallery.</p>
           <p>Check your B2 storage for images in the 'B2 LuxSync' subfolder.</p>
         </div>
+      )}
+      
+      {selectedPhoto && (
+        <PhotoModal 
+          photo={selectedPhoto} 
+          onClose={handleModalClose} 
+          onDownload={handleDownload} 
+        />
       )}
     </main>
   );
