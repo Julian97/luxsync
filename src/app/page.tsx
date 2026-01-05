@@ -11,7 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
-  const [currentGallery, setCurrentGallery] = useState<{ title: string; date: string } | null>(null);
+  const [currentGallery, setCurrentGallery] = useState<{ title: string; date: string; folderName: string } | null>(null);
 
   useEffect(() => {
     const fetchGalleriesAndPhotos = async () => {
@@ -29,12 +29,14 @@ export default function Home() {
           if (dateMatch) {
             setCurrentGallery({
               date: dateMatch[1],
-              title: dateMatch[2].trim()
+              title: dateMatch[2].trim(),
+              folderName: firstGallery.folderName
             });
           } else {
             setCurrentGallery({
               date: new Date().toISOString().split('T')[0],
-              title: firstGallery.folderName
+              title: firstGallery.folderName,
+              folderName: firstGallery.folderName
             });
           }
           
@@ -78,9 +80,23 @@ export default function Home() {
     document.body.removeChild(link);
   };
 
-  const handleDownloadGallery = () => {
-    // This would download all photos in the current gallery
-    alert('Gallery download functionality would be implemented here');
+  const handleDownloadGallery = async () => {
+    if (!currentGallery) {
+      alert('No gallery selected');
+      return;
+    }
+    
+    try {
+      // Create download URL using the gallery folder name
+      const galleryFolderName = encodeURIComponent(currentGallery.folderName);
+      const downloadUrl = `/api/galleries/download/${galleryFolderName}`;
+      
+      // Trigger download by redirecting to the API endpoint
+      window.location.href = downloadUrl;
+    } catch (error) {
+      console.error('Error downloading gallery:', error);
+      alert('Failed to download gallery');
+    }
   };
 
   if (loading) {
