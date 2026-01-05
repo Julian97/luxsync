@@ -104,3 +104,66 @@ export const createPhoto = async (photoData: { gallery_id: string; user_tag_id?:
   
   return data;
 };
+
+export const getPhotosByUserHandle = async (userHandle: string) => {
+  const supabase = createClient();
+  
+  // First get the user by handle
+  const { data: user, error: userError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('handle', userHandle)
+    .single();
+    
+  if (userError) {
+    console.error('Error fetching user:', userError);
+    throw userError;
+  }
+  
+  // Then get photos tagged to this user
+  const { data: photos, error: photosError } = await supabase
+    .from('photos')
+    .select('*')
+    .eq('user_tag_id', user.id)
+    .order('created_at', { ascending: false });
+    
+  if (photosError) {
+    console.error('Error fetching photos by user:', photosError);
+    throw photosError;
+  }
+  
+  return photos;
+};
+
+export const getPhotosByUserHandleFromB2 = async (userHandle: string) => {
+  // This function will fetch photos from B2 storage based on the user handle (subfolder name)
+  // This is a fallback for when we don't have the user in the database
+  const { getPhotosForGallery } = await import('@/utils/b2/gallery-parser');
+  
+  // In the B2 structure, user photos are in subfolders named after the user handle
+  // So we need to find all galleries that have photos from this user
+  const { getGalleriesFromB2 } = await import('@/utils/b2/gallery-parser');
+  const galleries = await getGalleriesFromB2();
+  
+  let allUserPhotos: any[] = [];
+  
+  for (const gallery of galleries) {
+    // Get photos for this gallery
+    const photos = await getPhotosForGallery(gallery.folderName);
+    
+    // Filter photos that belong to this user handle
+    const userPhotos = photos.filter(photo => {
+      // Extract user handle from the photo path (format: B2_BASE_PATH/gallery/userHandle/image.jpg)
+      const pathParts = photo.b2_file_key.split('/');
+      if (pathParts.length >= 3) {
+        const extractedUserHandle = pathParts[2]; // The user handle is the third part
+        return extractedUserHandle === userHandle;
+      }
+      return false;
+    });
+    
+    allUserPhotos = [...allUserPhotos, ...userPhotos];
+  }
+  
+  return allUserPhotos;
+};

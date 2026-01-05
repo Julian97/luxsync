@@ -7,6 +7,19 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Insert default users if they don't exist (for testing purposes)
+INSERT INTO users (handle, display_name) 
+SELECT 'xymiku', 'XY Miku' 
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE handle = 'xymiku');
+
+INSERT INTO users (handle, display_name) 
+SELECT 'amos', 'Amos' 
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE handle = 'amos');
+
+INSERT INTO users (handle, display_name) 
+SELECT 'ruki', 'Ruki' 
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE handle = 'ruki');
+
 -- Create galleries table
 CREATE TABLE IF NOT EXISTS galleries (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
