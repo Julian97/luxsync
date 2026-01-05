@@ -13,15 +13,21 @@ export default function Home() {
   useEffect(() => {
     const fetchGalleriesAndPhotos = async () => {
       try {
-        // First, get the list of galleries
+        // First, get the list of galleries via API route
         const response = await fetch('/api/galleries');
         const data = await response.json();
         
         if (data.galleries && data.galleries.length > 0) {
-          // Use the first gallery in the list
+          // Get photos for the first gallery via API route
           const firstGallery = data.galleries[0];
-          const galleryPhotos = await getPhotosForGallery(firstGallery.folderName);
-          setPhotos(galleryPhotos);
+          const photosResponse = await fetch(`/api/photos/gallery/${encodeURIComponent(firstGallery.folderName)}`);
+          const photosData = await photosResponse.json();
+          
+          if (photosData.photos) {
+            setPhotos(photosData.photos);
+          } else {
+            setError('No photos found in the selected gallery');
+          }
         } else {
           setError('No galleries found in B2 storage');
         }

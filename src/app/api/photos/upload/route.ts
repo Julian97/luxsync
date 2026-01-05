@@ -81,34 +81,22 @@ export async function POST(request: NextRequest) {
 // Optional: GET route to list photos for a gallery
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
-    
     // Get galleryId from query params
     const { searchParams } = new URL(request.url);
     const galleryId = searchParams.get('galleryId');
     
-    if (!galleryId) {
+    if (galleryId) {
+      // If galleryId is provided, fetch photos from B2
+      const { getPhotosForGallery } = await import('@/utils/b2/gallery-parser');
+      const photos = await getPhotosForGallery(galleryId);
+      
+      return Response.json({ photos });
+    } else {
       return Response.json(
         { error: 'galleryId is required' },
         { status: 400 }
       );
     }
-
-    // Fetch photos from the database
-    const { data: photos, error } = await supabase
-      .from('photos')
-      .select('*')
-      .eq('gallery_id', galleryId);
-
-    if (error) {
-      console.error('Error fetching photos from Supabase:', error);
-      return Response.json(
-        { error: 'Failed to fetch photos' },
-        { status: 500 }
-      );
-    }
-
-    return Response.json({ photos });
   } catch (error) {
     console.error('Error in photos API:', error);
     return Response.json(
