@@ -191,6 +191,32 @@ export class B2Service {
       throw error;
     }
   }
+
+  /**
+   * List objects in a folder
+   */
+  async listObjects(prefix: string = '', maxKeys: number = 1000) {
+    try {
+      const { ListObjectsV2Command } = await import("@aws-sdk/client-s3");
+      
+      const command = new ListObjectsV2Command({
+        Bucket: B2_BUCKET_NAME,
+        Prefix: `${B2_BASE_PATH}/${prefix}`,
+        MaxKeys: maxKeys,
+      });
+
+      const response = await this.client.send(command);
+      
+      return {
+        objects: response.Contents || [],
+        isTruncated: response.IsTruncated || false,
+        nextContinuationToken: response.NextContinuationToken,
+      };
+    } catch (error) {
+      console.error('Error listing objects from B2:', error);
+      throw error;
+    }
+  }
 }
 
 // Create a singleton instance
