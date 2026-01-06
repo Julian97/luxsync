@@ -18,7 +18,7 @@ export const syncGalleriesToDatabase = async () => {
         // Check if gallery already exists in database
         let dbGallery;
         try {
-          dbGallery = await getGalleryByFolderName(b2Gallery.folderName);
+          dbGallery = await getGalleryByFolderName(b2Gallery.folder_name);
         } catch (error) {
           // Gallery doesn't exist, we'll create it
           dbGallery = null;
@@ -26,21 +26,21 @@ export const syncGalleriesToDatabase = async () => {
         
         if (!dbGallery) {
           // Create gallery in database
-          const dateMatch = b2Gallery.folderName.match(/^([0-9]{4}-[0-9]{2}-[0-9]{2})\s+(.+)$/);
+          const dateMatch = b2Gallery.folder_name.match(/^([0-9]{4}-[0-9]{2}-[0-9]{2})\s+(.+)$/);
           const eventDate = dateMatch ? dateMatch[1] : new Date().toISOString().split('T')[0];
-          const title = dateMatch ? dateMatch[2].trim() : b2Gallery.folderName;
+          const title = dateMatch ? dateMatch[2].trim() : b2Gallery.folder_name;
           
           dbGallery = await createGallery({
             title,
             event_date: eventDate,
-            folder_name: b2Gallery.folderName,
+            folder_name: b2Gallery.folder_name,
           });
           
-          console.log(`Created gallery in database: ${b2Gallery.folderName}`);
+          console.log(`Created gallery in database: ${b2Gallery.folder_name}`);
         }
         
         // Get photos for this gallery from B2
-        const b2Photos = await getPhotosForGallery(b2Gallery.folderName);
+        const b2Photos = await getPhotosForGallery(b2Gallery.folder_name);
         
         // Add photos to database if they don't exist
         for (const photo of b2Photos) {
@@ -61,7 +61,7 @@ export const syncGalleriesToDatabase = async () => {
           }
         }
       } catch (galleryError) {
-        console.error(`Error processing gallery ${b2Gallery.folderName}:`, galleryError);
+        console.error(`Error processing gallery ${b2Gallery.folder_name}:`, galleryError);
       }
     }
     
