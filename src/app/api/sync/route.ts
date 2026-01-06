@@ -14,7 +14,32 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in sync API:', error);
     return Response.json(
-      { error: 'Failed to sync galleries from B2 to database' },
+      { 
+        error: 'Failed to sync galleries from B2 to database',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('Sync API POST called');
+    
+    // Run the sync process
+    await syncGalleriesToDatabase();
+    
+    return Response.json({
+      message: 'Gallery sync completed successfully'
+    });
+  } catch (error) {
+    console.error('Error in sync API POST:', error);
+    return Response.json(
+      { 
+        error: 'Failed to sync galleries from B2 to database',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
