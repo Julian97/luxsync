@@ -71,7 +71,7 @@ export const getGalleryByFolderName = async (folderName: string) => {
   return data;
 };
 
-export const createGallery = async (galleryData: { title: string; event_date: string; folder_name: string; cover_image_url?: string }) => {
+export const createGallery = async (galleryData: { title: string; event_date: string; folder_name: string; cover_image_url?: string; access_pin?: string }) => {
   const supabase = createClient();
   
   const { data, error } = await supabase
@@ -103,6 +103,29 @@ export const createPhoto = async (photoData: { gallery_id: string; user_tag_id?:
   }
   
   return data;
+};
+
+export const validateGalleryAccess = async (folderName: string, pin: string) => {
+  const supabase = createClient();
+  
+  const { data, error } = await supabase
+    .from('galleries')
+    .select('access_pin')
+    .eq('folder_name', folderName)
+    .single();
+    
+  if (error) {
+    console.error('Error validating gallery access:', error);
+    return false;
+  }
+  
+  // If no access_pin is set, gallery is public
+  if (!data.access_pin) {
+    return true;
+  }
+  
+  // Check if provided pin matches stored pin
+  return data.access_pin === pin;
 };
 
 export const getPhotosByUserHandle = async (userHandle: string) => {

@@ -11,6 +11,7 @@ export interface Gallery {
   event_date: string; // ISO date string
   folder_name: string;
   cover_image_url: string;
+  access_pin?: string;
 }
 
 export interface Photo {

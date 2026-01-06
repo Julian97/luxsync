@@ -1,5 +1,5 @@
 import { b2Service } from './service';
-import { Photo } from '@/types/database';
+import { Photo, Gallery } from '@/types/database';
 
 export interface GalleryFolder {
   id: string;
@@ -7,12 +7,13 @@ export interface GalleryFolder {
   eventDate: string;
   folderName: string;
   coverImage?: string;
+  accessPin?: string;
 }
 
 /**
  * Parse gallery folders from B2 storage
  */
-export async function getGalleriesFromB2(): Promise<GalleryFolder[]> {
+export async function getGalleriesFromB2(): Promise<Gallery[]> {
   try {
     console.log('Attempting to fetch galleries from B2');
     console.log('B2_PUBLIC_URL:', process.env.B2_PUBLIC_URL);
@@ -40,8 +41,8 @@ export async function getGalleriesFromB2(): Promise<GalleryFolder[]> {
       }
     });
     
-    // Convert to GalleryFolder objects
-    const galleries: GalleryFolder[] = Array.from(galleryFolders).map(folderName => {
+    // Convert to Gallery objects
+    const galleries: Gallery[] = Array.from(galleryFolders).map(folderName => {
       // Extract date and title from folder name (format: YYYY-MM-DD Title)
       const dateMatch = folderName.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)$/);
       
@@ -49,18 +50,20 @@ export async function getGalleriesFromB2(): Promise<GalleryFolder[]> {
         return {
           id: folderName, // Using folder name as ID for now
           title: dateMatch[2].trim(),
-          eventDate: dateMatch[1],
-          folderName: folderName,
-          coverImage: getCoverImageForGallery(result.objects, folderName),
+          event_date: dateMatch[1],
+          folder_name: folderName,
+          cover_image_url: getCoverImageForGallery(result.objects, folderName) || '',
+          access_pin: undefined, // Default to no PIN protection
         };
       } else {
         // If no date in folder name, use the full name as title
         return {
           id: folderName,
           title: folderName,
-          eventDate: new Date().toISOString().split('T')[0], // Use current date as fallback
-          folderName: folderName,
-          coverImage: getCoverImageForGallery(result.objects, folderName),
+          event_date: new Date().toISOString().split('T')[0], // Use current date as fallback
+          folder_name: folderName,
+          cover_image_url: getCoverImageForGallery(result.objects, folderName) || '',
+          access_pin: undefined, // Default to no PIN protection
         };
       }
     });

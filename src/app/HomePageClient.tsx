@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import MasonryGallery from '@/components/MasonryGallery';
 import PhotoModal from '@/components/modal/PhotoModal';
-import { Photo } from '@/types/database';
+import { Photo, Gallery } from '@/types/database';
 
 interface HomePageClientProps {
   initialPhotos: Photo[];
-  initialGallery: any; // Gallery object from Supabase
+  initialGallery: Gallery | null;
   initialError: string | null;
 }
 
@@ -15,7 +15,7 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
   const [photos] = useState<Photo[]>(initialPhotos);
   const [error] = useState<string | null>(initialError);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
-  const [currentGallery] = useState(initialGallery);
+  const [currentGallery] = useState<Gallery | null>(initialGallery);
 
   const handlePhotoClick = (photo: Photo) => {
     setSelectedPhoto(photo);

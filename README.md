@@ -11,6 +11,21 @@ A Next.js-based photo gallery platform that integrates with Supabase for databas
 - **Storage**: Backblaze B2 (S3-compatible)
 - **Infrastructure**: Vercel (Frontend Hosting)
 
+## Core Features
+
+LuxSync provides a comprehensive solution for photographers to share galleries with clients:
+
+- **Masonry Grid Layout**: Responsive photo galleries with proper aspect ratio preservation
+- **Folder Structure Parsing**: Automatically parses [YYYY-MM-DD] [Project Title] and [User Handle] folder structures
+- **Supabase Integration**: User and gallery management with PostgreSQL database
+- **Backblaze B2 Storage**: High-performance image storage with S3-compatible API
+- **Full-Screen Photo Viewer**: With zoom, navigation, and download capabilities
+- **Gallery Download**: ZIP archive downloads of entire galleries
+- **PIN Protection**: 4-digit PIN access control for private galleries
+- **Client Favorites**: Heart button functionality with filename copying for selection
+- **Dynamic Metadata**: Open Graph tags for rich social media previews
+- **Image Optimization**: Optimized thumbnails for grid display with full-resolution for modal viewing
+
 ## Features
 
 - Responsive masonry grid layout for photo galleries
@@ -26,6 +41,14 @@ A Next.js-based photo gallery platform that integrates with Supabase for databas
 - Responsive design with multiple column layout based on screen size
 - Error handling and loading states
 - Keyboard navigation support (Escape key to close modal)
+- PIN-protected galleries for privacy (4-digit PIN access control)
+- Client favorites with heart button and filename copying functionality
+- Fixed masonry layout rendering with proper breakpoints for responsive columns
+- Dynamic Open Graph metadata for social sharing with proper image previews
+- Image optimization with Next.js Image component for bandwidth saving
+- Responsive breakpoints: 1 column (≤350px), 2 columns (≤750px), 3 columns (≤900px), 4 columns (>1200px)
+- Local storage for client preferences and favorites
+- Social media integration with rich previews for Telegram, Discord, and other platforms
 
 ## Database Schema
 
@@ -41,6 +64,8 @@ A Next.js-based photo gallery platform that integrates with Supabase for databas
 - event_date (string)
 - folder_name (string)
 - cover_image_url (string)
+- access_pin (string, optional)
+- created_at (timestamp with time zone)
 
 ### photos
 - id (string)
@@ -48,6 +73,7 @@ A Next.js-based photo gallery platform that integrates with Supabase for databas
 - user_tag_id (string, nullable)
 - b2_file_key (string)
 - public_url (string)
+- optimized_url (string, optional)
 - width (number)
 - height (number)
 
@@ -71,6 +97,9 @@ B2_BASE_PATH=B2 LuxSync  # Subfolder path in your bucket (optional, defaults to 
 B2_ENDPOINT=https://s3.us-west-004.backblazeb2.com  # Update with your B2 endpoint
 B2_REGION=us-west-004  # Update with your B2 region
 B2_PUBLIC_URL=https://fXXXXX.backblazeb2.com  # Your B2 public URL
+
+# Image Optimization (Optional)
+# NEXT_PUBLIC_BASE_URL=your_domain_url  # For image optimization
 ```
 
 3. Run the development server:
@@ -105,13 +134,76 @@ src/
         └── server.ts       # Supabase server-side client
 ```
 
+## Usage
+
+### For Photographers
+
+1. **Upload Photos**: Organize your photos in Backblaze B2 using the folder structure: `B2 LuxSync/[YYYY-MM-DD] [Project Title]/[User Handle]/[Photos]`
+2. **Create Galleries**: The system automatically creates galleries based on folder names
+3. **Set PINs**: Add 4-digit PINs to galleries for private content
+4. **Share Links**: Provide clients with gallery links for selection
+
+### For Clients
+
+1. **Browse Galleries**: View photos in responsive masonry layout
+2. **Favorite Photos**: Click the heart button in photo modal to favorite photos
+3. **Copy Filenames**: Use the "Copy Filenames" button to get a list of selected photos
+4. **Download**: Download individual photos or entire galleries
+5. **Social Sharing**: Share gallery links with rich previews on social platforms
+
 ## Key Components
 
 - **MasonryGallery**: Responsive masonry grid component that displays photos with preserved aspect ratios
-- **PhotoModal**: Full-screen photo viewer with download and navigation capabilities
+- **PhotoModal**: Full-screen photo viewer with download, navigation, and favorite capabilities
 - **Supabase Client**: Server-side Supabase client for database operations
 - **Database Types**: TypeScript interfaces matching the Supabase schema
 - **B2 Storage Service**: Backblaze B2 integration for photo storage with S3-compatible API
 - **Gallery Parser**: Parses folder structure to extract gallery information and photo metadata
 - **Image Processing**: Utilities for extracting image dimensions from B2 metadata
 - **API Routes**: Server-side endpoints for fetching galleries and photos, and downloading galleries as ZIP archives
+- **PIN Protection**: 4-digit PIN access control for private galleries
+- **Favorites Panel**: Client favorites with heart button and filename copying functionality
+
+## PIN Protection
+
+LuxSync supports PIN-protected galleries for privacy. Gallery owners can set a 4-digit PIN for private galleries (such as boudoir or unreleased shoots). When a gallery has an access PIN set:
+
+1. Visitors must enter the correct 4-digit PIN to view the gallery
+2. The PIN is validated server-side for security
+3. Incorrect PINs show an error message
+4. The PIN input form is displayed before the gallery content
+5. PIN-protected galleries are still discoverable in lists but require authentication to view content
+
+## Client Favorites
+
+LuxSync includes a client favorites feature to help clients select specific photos for editing:
+
+1. Heart button in the photo modal to favorite/unfavorite photos
+2. Favorites are stored in browser's localStorage
+3. Favorites panel appears in the top-right corner when photos are favorited
+4. Copy Filenames button extracts filenames from favorited photos and copies them to clipboard
+5. Clients can paste the list directly into Telegram or other communication platforms
+6. Clear all button to reset favorites
+7. Favorites persist between sessions
+
+## Masonry Layout
+
+The masonry grid layout uses responsive breakpoints to optimize the viewing experience:
+
+- 1 column for screens up to 350px wide
+- 2 columns for screens between 351px and 750px wide
+- 3 columns for screens between 751px and 900px wide
+- 4 columns for screens 901px and wider
+
+This layout ensures optimal viewing experience across all device sizes.
+
+## Open Graph Metadata
+
+LuxSync generates dynamic Open Graph metadata for rich social media previews:
+
+- Title: "[Gallery Title] | LuxSync"
+- Description: "Gallery from [Event Date]"
+- Image: Gallery cover image or first photo in the gallery
+- Twitter card: Summary large image format
+
+This enables rich previews when sharing gallery links on Telegram, Discord, Twitter, and other social platforms.

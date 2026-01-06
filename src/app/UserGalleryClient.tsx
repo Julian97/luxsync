@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import MasonryGallery from '@/components/MasonryGallery';
 import PhotoModal from '@/components/modal/PhotoModal';
-import { Photo } from '@/types/database';
+import { Photo, Gallery } from '@/types/database';
 
 interface UserGalleryClientProps {
   userId: string;

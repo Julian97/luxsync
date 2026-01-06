@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ResponsiveMasonry } from 'react-responsive-masonry';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Photo } from '@/types/database';
 
@@ -11,22 +11,12 @@ interface MasonryGalleryProps {
   onPhotoClick?: (photo: Photo) => void;
 }
 
+const ResponsiveMasonry = dynamic(
+  () => import('react-responsive-masonry').then((mod) => mod.ResponsiveMasonry),
+  { ssr: false, loading: () => <div className="flex justify-center items-center h-64 w-full">Loading gallery...</div> }
+);
+
 const MasonryGallery: React.FC<MasonryGalleryProps> = ({ photos, onPhotoClick }) => {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Don't render the masonry until client-side hydration is complete
-  if (!isMounted) {
-    return (
-      <div className="flex justify-center items-center h-64 w-full">
-        <p className="text-gray-500">Loading gallery...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full">
       <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
