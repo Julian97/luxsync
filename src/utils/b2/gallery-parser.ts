@@ -159,7 +159,7 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
             photos.push({
               id: obj.Key, // Using the full key as ID
               gallery_id: galleryName,
-              user_tag_id: userHandle, // This would map to a user in your DB
+              user_tag_id: userHandle, // This maps to the user handle from the path
               b2_file_key: obj.Key,
               public_url: originalUrl, // Original resolution
               optimized_url: originalUrl, // For now, same as original - in production, this would be a CDN or service URL

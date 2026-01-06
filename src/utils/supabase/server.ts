@@ -189,6 +189,59 @@ export const getPhotosByUserHandle = async (userHandle: string) => {
   return photos;
 };
 
+export const deleteGallery = async (galleryId: string) => {
+  const supabase = createClient();
+  
+  const { error } = await supabase
+    .from('galleries')
+    .delete()
+    .eq('id', galleryId);
+  
+  if (error) {
+    console.error('Error deleting gallery:', error);
+    throw error;
+  }
+  
+  return { success: true };
+};
+
+export const getUserByHandle = async (handle: string) => {
+  const supabase = createClient();
+  
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('handle', handle)
+    .single();
+  
+  if (error) {
+    console.error('Error fetching user by handle:', error);
+    throw error;
+  }
+  
+  return data;
+};
+
+export const createUser = async (userData: { handle: string; display_name?: string; instagram?: string }) => {
+  const supabase = createClient();
+  
+  // Generate a unique ID for the user
+  const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  const { data, error } = await supabase
+    .from('users')
+    .insert([{ id: userId, ...userData }])
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+  
+  return data;
+};
+
 export const getPhotosByUserHandleFromB2 = async (userHandle: string) => {
   console.log('Fetching photos for user handle from B2:', userHandle);
   
