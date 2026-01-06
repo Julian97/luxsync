@@ -129,7 +129,7 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
               }
             }
             
-            const originalUrl = `${process.env.B2_PUBLIC_URL}/file/${process.env.B2_BUCKET_NAME}/${obj.Key}`;
+            const originalUrl = `${process.env.B2_PUBLIC_URL}/file/${process.env.B2_BUCKET_NAME}/${encodeURIComponent(obj.Key)}`;
             
             photos.push({
               id: obj.Key, // Using the full key as ID
