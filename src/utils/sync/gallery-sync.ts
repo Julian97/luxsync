@@ -11,7 +11,9 @@ export const syncGalleriesToDatabase = async () => {
     console.log('Starting gallery sync from B2 to Supabase...');
     
     // Get all galleries from B2
+    console.log('Fetching galleries from B2 for sync...');
     const b2Galleries = await getGalleriesFromB2();
+    console.log('Received', b2Galleries.length, 'galleries from B2:', b2Galleries.map(g => g.title));
     
     for (const b2Gallery of b2Galleries) {
       try {

@@ -44,6 +44,7 @@ export default async function Home() {
         const syncedGalleries = await getGalleries();
         
         if (syncedGalleries && syncedGalleries.length > 0) {
+          console.log('Successfully synced galleries from B2, returning first gallery:', syncedGalleries[0]);
           const firstGallery = syncedGalleries[0];
           const photos = await getPhotosByGallery(firstGallery.id);
           
@@ -52,6 +53,27 @@ export default async function Home() {
             initialGallery={firstGallery} 
             initialError={null} 
           />;
+        } else {
+          console.log('Still no galleries after sync, falling back to B2 directly');
+          // If sync didn't work, fall back to B2 directly
+          const { getGalleriesFromB2 } = await import('@/utils/b2/gallery-parser');
+          const b2Galleries = await getGalleriesFromB2();
+          
+          if (b2Galleries && b2Galleries.length > 0) {
+            const firstGallery = b2Galleries[0];
+            
+            // Get photos for the first gallery from B2
+            const { getPhotosForGallery } = await import('@/utils/b2/gallery-parser');
+            const photos = await getPhotosForGallery(firstGallery.folder_name);
+            
+            console.log(`Loaded ${photos.length} photos from B2 for gallery ${firstGallery.title}`);
+            
+            return <HomePageClient 
+              initialPhotos={photos} 
+              initialGallery={firstGallery} 
+              initialError={null} 
+            />;
+          }
         }
       } catch (syncError) {
         console.error('Error during sync from B2:', syncError);

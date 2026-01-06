@@ -21,24 +21,34 @@ export async function getGalleriesFromB2(): Promise<Gallery[]> {
     console.log('B2_BASE_PATH:', process.env.B2_BASE_PATH);
     
     // List all objects in the base path
+    console.log('About to list objects with B2_BASE_PATH:', process.env.B2_BASE_PATH);
     const result = await b2Service.listObjects('', 1000);
+    console.log('Listed objects:', result.objects.length, 'objects found');
+    if (result.objects.length > 0) {
+      console.log('Sample of first few object keys:', result.objects.slice(0, 5).map(obj => obj.Key));
+    }
     
     // Extract unique gallery folders from the object keys
     const galleryFolders = new Set<string>();
     
     result.objects.forEach(obj => {
       if (obj.Key) {
+        console.log('Processing object key for gallery detection:', obj.Key);
         // Extract the gallery folder name from the path
         // Path format: B2 LuxSync/2026-01-05 Miku Expo/xymiku/xymikuIMG20251227163910.jpg
         const pathParts = obj.Key.split('/');
+        console.log('Path parts:', pathParts);
         if (pathParts.length >= 3) { // At least basepath/gallery/user/image
           const galleryName = pathParts[1]; // The gallery folder name
+          console.log('Extracted gallery name:', galleryName);
           if (galleryName) {
             galleryFolders.add(galleryName);
           }
         }
       }
     });
+    
+    console.log('Found gallery folders:', Array.from(galleryFolders));
     
     // Convert to Gallery objects
     const galleries: Gallery[] = Array.from(galleryFolders).map(folderName => {
@@ -91,7 +101,12 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
     // Filter objects that belong to the specific gallery
     // Path format in bucket is like: B2 LuxSync/2026-01-05 Miku Expo/xymiku/xymikuIMG20251227163910.jpg
     const result = {
-      objects: allObjectsResult.objects.filter(obj => obj.Key && obj.Key.includes(`${galleryFolder}/`)),
+      objects: allObjectsResult.objects.filter(obj => {
+        if (!obj.Key) return false;
+        // Debug logging to see what paths are being processed
+        console.log('Checking object key:', obj.Key, 'for gallery:', galleryFolder);
+        return obj.Key.includes(`${galleryFolder}/`);
+      }),
       isTruncated: false,
       nextContinuationToken: null,
     };
