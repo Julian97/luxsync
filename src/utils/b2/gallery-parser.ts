@@ -52,8 +52,8 @@ export async function getGalleriesFromB2(): Promise<Gallery[]> {
     
     // Convert to Gallery objects
     const galleries: Gallery[] = Array.from(galleryFolders).map(folderName => {
-      // Extract date and title from folder name (format: YYYY-MM-DD Title)
-      const dateMatch = folderName.match(/^(\d{4}-\d{2}-\d{2})\s+(.+)$/);
+      // Extract date and title from folder name (format: YYYY-MM-DD Title or YYYY_MM_DD Title)
+      const dateMatch = folderName.match(/^(\d{4}[-_]\d{2}[-_]\d{2})\s+(.+)$/);
       
       if (dateMatch) {
         return {
