@@ -137,7 +137,9 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
               }
             }
             
-            const originalUrl = `${process.env.B2_PUBLIC_URL}/file/${process.env.B2_BUCKET_NAME}/${obj.Key}`;
+            // B2 uses + signs to encode spaces in URLs, not %20
+            const encodedKey = obj.Key.replace(/ /g, '+');
+            const originalUrl = `${process.env.B2_PUBLIC_URL}/file/${process.env.B2_BUCKET_NAME}/${encodedKey}`;
             
             photos.push({
               id: obj.Key, // Using the full key as ID
@@ -170,7 +172,9 @@ function getCoverImageForGallery(objects: any[], galleryName: string): string | 
       const pathParts = obj.Key.split('/');
       if (pathParts.length >= 3 && isImageFile(pathParts[pathParts.length - 1])) {
         // Return the first image found in the gallery as cover
-        return `${process.env.B2_PUBLIC_URL}/file/${process.env.B2_BUCKET_NAME}/${obj.Key}`;
+        // B2 uses + signs to encode spaces in URLs, not %20
+        const encodedKey = obj.Key.replace(/ /g, '+');
+        return `${process.env.B2_PUBLIC_URL}/file/${process.env.B2_BUCKET_NAME}/${encodedKey}`;
       }
     }
   }
