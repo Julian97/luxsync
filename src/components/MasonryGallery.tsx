@@ -19,7 +19,7 @@ const ResponsiveMasonry = dynamic(
 const MasonryGallery: React.FC<MasonryGalleryProps> = ({ photos, onPhotoClick }) => {
   return (
     <div className="w-full max-w-full">
-      <ResponsiveMasonry columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1200: 4 }}>
+      <ResponsiveMasonry columnsCountBreakPoints={{ 350: 3, 750: 3, 900: 3, 1200: 3 }}>
         <div className="space-y-4">
           {photos.map((photo) => (
             <div
