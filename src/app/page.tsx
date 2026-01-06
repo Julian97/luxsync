@@ -34,6 +34,29 @@ export default async function Home() {
         initialError={null} 
       />;
     } else {
+      // No galleries in database, try to sync from B2
+      try {
+        console.log('No galleries found in database, attempting to sync from B2...');
+        const { syncGalleriesToDatabase } = await import('@/utils/sync/gallery-sync');
+        await syncGalleriesToDatabase();
+        
+        // Try to fetch galleries again after sync
+        const syncedGalleries = await getGalleries();
+        
+        if (syncedGalleries && syncedGalleries.length > 0) {
+          const firstGallery = syncedGalleries[0];
+          const photos = await getPhotosByGallery(firstGallery.id);
+          
+          return <HomePageClient 
+            initialPhotos={photos} 
+            initialGallery={firstGallery} 
+            initialError={null} 
+          />;
+        }
+      } catch (syncError) {
+        console.error('Error during sync from B2:', syncError);
+      }
+      
       return <HomePageClient 
         initialPhotos={[]} 
         initialGallery={null} 
