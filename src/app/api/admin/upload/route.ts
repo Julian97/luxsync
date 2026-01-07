@@ -3,6 +3,7 @@ import { b2Service } from '@/utils/b2/service';
 import { createClient } from '@/utils/supabase/server';
 import sizeOf from 'image-size';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
+import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
 
         // Generate a unique filename to hash the original name
         const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
-        const hashedFileName = `${crypto.randomUUID()}.${fileExtension}`;
+        const hashedFileName = `${randomUUID()}.${fileExtension}`;
         
         // Construct the full B2 path
         const b2Path = `B2 LuxSync/${folderPath}/${hashedFileName}`.replace('//', '/');
@@ -94,7 +95,10 @@ export async function POST(request: NextRequest) {
           .eq('folder_name', galleryName)
           .single();
           
-        if (!galleryError && existingGallery) {
+        if (galleryError) {
+          console.error('Error finding gallery:', galleryError);
+          errors.push(`Failed to find or create gallery ${galleryName}: ${galleryError.message}`);
+        } else if (existingGallery) {
           gallery = existingGallery;
         } else {
           // Create new gallery if it doesn't exist
@@ -112,7 +116,10 @@ export async function POST(request: NextRequest) {
             .select()
             .single();
             
-          if (!createError) {
+          if (createError) {
+            console.error('Error creating gallery:', createError);
+            errors.push(`Failed to create gallery ${galleryName}: ${createError.message}`);
+          } else {
             gallery = newGallery;
           }
         }
@@ -127,7 +134,10 @@ export async function POST(request: NextRequest) {
           .eq('handle', userHandle)
           .single();
           
-        if (!userError && existingUser) {
+        if (userError) {
+          console.error('Error finding user:', userError);
+          errors.push(`Failed to find or create user ${userHandle}: ${userError.message}`);
+        } else if (existingUser) {
           user = existingUser;
         } else {
           // Create new user if it doesn't exist
@@ -140,7 +150,10 @@ export async function POST(request: NextRequest) {
             .select()
             .single();
             
-          if (!createUserError) {
+          if (createUserError) {
+            console.error('Error creating user:', createUserError);
+            errors.push(`Failed to create user ${userHandle}: ${createUserError.message}`);
+          } else {
             user = newUser;
           }
         }
@@ -158,14 +171,15 @@ export async function POST(request: NextRequest) {
               public_url: publicUrl,
               width,
               height,
-              // Store original filename for reference (but not in the B2 path)
-              id: fileHash,
             }]);
             
           if (photoError) {
             console.error('Error inserting photo:', photoError);
             errors.push(`Failed to save metadata for ${file.name}: ${photoError.message}`);
           }
+        } else {
+          console.error('Gallery not found, skipping photo insertion');
+          errors.push(`Could not find or create gallery for ${file.name}`);
         }
 
         processedFiles++;
@@ -195,5 +209,5 @@ export async function POST(request: NextRequest) {
 async function calculateFileHash(buffer: Buffer): Promise<string> {
   // This is a very simplified approach
   // In a real application, you'd use crypto to generate a proper hash
-  return crypto.randomUUID(); // Using crypto.randomUUID() as a placeholder
+  return randomUUID(); // Using randomUUID() as a placeholder
 }
