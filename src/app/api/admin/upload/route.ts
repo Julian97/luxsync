@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       // Handle the case where form data parsing fails (e.g., payload too large)
       console.error('Error parsing form data:', error);
       return Response.json(
-        { success: false, message: 'Request payload too large. Please reduce the size or number of files.' },
+        { success: false, message: 'Request payload too large. Please reduce the size or number of files (max 50MB total).' },
         { status: 413 }
       );
     }

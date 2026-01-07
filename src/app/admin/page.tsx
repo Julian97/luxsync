@@ -142,16 +142,16 @@ function UploadTab() {
         totalSize += e.target.files[i].size;
       }
       
-      // Check if total size exceeds 10MB limit
-      if (totalSize > 10 * 1024 * 1024) {
-        setMessage('Total file size exceeds 10MB limit. Please upload smaller files or fewer files at once.');
+      // Check if total size exceeds 50MB limit
+      if (totalSize > 50 * 1024 * 1024) {
+        setMessage('Total file size exceeds 50MB limit. Please upload smaller files or fewer files at once.');
         return;
       }
       
       // Check individual file sizes
       for (let i = 0; i < e.target.files.length; i++) {
-        if (e.target.files[i].size > 5 * 1024 * 1024) { // 5MB per file limit
-          setMessage(`File ${e.target.files[i].name} exceeds 5MB limit. Please resize or compress the image.`);
+        if (e.target.files[i].size > 25 * 1024 * 1024) { // 25MB per file limit
+          setMessage(`File ${e.target.files[i].name} exceeds 25MB limit. Please resize or compress the image.`);
           return;
         }
       }
@@ -189,7 +189,7 @@ function UploadTab() {
       } else {
         // Check for specific error codes
         if (response.status === 413) {
-          setMessage('Upload failed: File size too large. Please reduce the size or number of files.');
+          setMessage('Upload failed: File size too large. Please reduce the size or number of files (max 50MB total).');
         } else {
           setMessage(result.message || 'Upload failed');
         }
@@ -197,7 +197,7 @@ function UploadTab() {
     } catch (error) {
       // Check if it's a network error related to size
       if (error instanceof TypeError && error.message.includes('load')) {
-        setMessage('Upload failed: File size too large. Please reduce the size or number of files.');
+        setMessage('Upload failed: File size too large. Please reduce the size or number of files (max 50MB total).');
       } else {
         setMessage('An error occurred during upload');
       }
@@ -232,7 +232,7 @@ function UploadTab() {
           onChange={handleFileChange}
           className="w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
         />
-        <p className="text-xs text-gray-400 mt-1">Max file size: 5MB per file, 10MB total per batch</p>
+        <p className="text-xs text-gray-400 mt-1">Max file size: 25MB per file, 50MB total per batch</p>
       </div>
       
       <button
