@@ -13,8 +13,19 @@ export const syncGalleriesToDatabase = async () => {
     
     // Get all galleries from B2
     console.log('Fetching galleries from B2 for sync...');
+    console.log('B2_PUBLIC_URL:', process.env.B2_PUBLIC_URL);
+    console.log('B2_BUCKET_NAME:', process.env.B2_BUCKET_NAME);
+    console.log('B2_BASE_PATH:', process.env.B2_BASE_PATH);
+    
     const b2Galleries = await getGalleriesFromB2();
-    console.log('Received', b2Galleries.length, 'galleries from B2:', b2Galleries.map(g => g.title));
+    console.log('Received', b2Galleries.length, 'galleries from B2:', b2Galleries.map(g => ({ title: g.title, folder_name: g.folder_name })));
+    
+    if (b2Galleries.length === 0) {
+      console.log('No galleries found in B2. Checking raw object listing...');
+      const allObjectsResult = await b2Service.listObjects('', 1000);
+      console.log('Total objects in B2:', allObjectsResult.objects.length);
+      console.log('Sample object keys:', allObjectsResult.objects.slice(0, 10).map(obj => obj.Key));
+    }
     
     // Get all current galleries from database to identify deletions
     const currentDbGalleries = await getGalleries();

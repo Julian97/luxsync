@@ -26,6 +26,14 @@ export async function getGalleriesFromB2(): Promise<Gallery[]> {
     console.log('Listed objects:', result.objects.length, 'objects found');
     if (result.objects.length > 0) {
       console.log('Sample of first few object keys:', result.objects.slice(0, 5).map(obj => obj.Key));
+      
+      // Debug: Look for objects that match our expected structure
+      const potentialGalleries = result.objects.filter(obj => {
+        if (!obj.Key) return false;
+        const pathParts = obj.Key.split('/');
+        return pathParts.length >= 3 && obj.Key.includes('B2 LuxSync');
+      });
+      console.log('Potential gallery objects:', potentialGalleries.slice(0, 10).map(obj => obj.Key));
     }
     
     // Extract unique gallery folders from the object keys
@@ -42,7 +50,13 @@ export async function getGalleriesFromB2(): Promise<Gallery[]> {
           const galleryName = pathParts[1]; // The gallery folder name
           console.log('Extracted gallery name:', galleryName);
           if (galleryName) {
-            galleryFolders.add(galleryName);
+            // Only add if it looks like a gallery folder (has date format)
+            if (galleryName.match(/^([0-9]{4}[-_][0-9]{2}[-_][0-9]{2})/)) {
+              galleryFolders.add(galleryName);
+              console.log('Added gallery:', galleryName);
+            } else {
+              console.log('Skipping non-gallery folder:', galleryName);
+            }
           }
         }
       }
@@ -98,6 +112,8 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
     // Since galleryFolder is the name like '2026-01-05 Miku Expo', we need to search for it in the path
     const allObjectsResult = await b2Service.listObjects('', 1000);
     
+    console.log('Looking for gallery:', galleryFolder, 'in', allObjectsResult.objects.length, 'total objects');
+    
     // Filter objects that belong to the specific gallery
     // Path format in bucket is like: B2 LuxSync/2026-01-05 Miku Expo/xymiku/xymikuIMG20251227163910.jpg
     const result = {
@@ -110,6 +126,8 @@ export async function getPhotosForGallery(galleryFolder: string): Promise<Photo[
       isTruncated: false,
       nextContinuationToken: null,
     };
+    
+    console.log('Found', result.objects.length, 'objects for gallery:', galleryFolder);
     
     // Extract photos from the objects
     const photos: Photo[] = [];
