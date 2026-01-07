@@ -136,6 +136,26 @@ function UploadTab() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
+      // Check total size of files
+      let totalSize = 0;
+      for (let i = 0; i < e.target.files.length; i++) {
+        totalSize += e.target.files[i].size;
+      }
+      
+      // Check if total size exceeds 10MB limit
+      if (totalSize > 10 * 1024 * 1024) {
+        setMessage('Total file size exceeds 10MB limit. Please upload smaller files or fewer files at once.');
+        return;
+      }
+      
+      // Check individual file sizes
+      for (let i = 0; i < e.target.files.length; i++) {
+        if (e.target.files[i].size > 5 * 1024 * 1024) { // 5MB per file limit
+          setMessage(`File ${e.target.files[i].name} exceeds 5MB limit. Please resize or compress the image.`);
+          return;
+        }
+      }
+      
       setFiles(e.target.files);
     }
   };
@@ -167,10 +187,20 @@ function UploadTab() {
         setMessage(`${result.message}. ${result.processedFiles} files processed.`);
         setFiles(null);
       } else {
-        setMessage(result.message || 'Upload failed');
+        // Check for specific error codes
+        if (response.status === 413) {
+          setMessage('Upload failed: File size too large. Please reduce the size or number of files.');
+        } else {
+          setMessage(result.message || 'Upload failed');
+        }
       }
     } catch (error) {
-      setMessage('An error occurred during upload');
+      // Check if it's a network error related to size
+      if (error instanceof TypeError && error.message.includes('load')) {
+        setMessage('Upload failed: File size too large. Please reduce the size or number of files.');
+      } else {
+        setMessage('An error occurred during upload');
+      }
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -202,6 +232,7 @@ function UploadTab() {
           onChange={handleFileChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
         />
+        <p className="text-xs text-gray-500 mt-1">Max file size: 5MB per file, 10MB total per batch</p>
       </div>
       
       <button

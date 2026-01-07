@@ -14,9 +14,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For multipart form data (file uploads), we need to handle it differently
-    // This is a simplified version - in a real app you'd process the multipart data properly
-    const formData = await request.formData();
+    let formData;
+    try {
+      // Parse form data for file uploads
+      formData = await request.formData();
+    } catch (error) {
+      // Handle the case where form data parsing fails (e.g., payload too large)
+      console.error('Error parsing form data:', error);
+      return Response.json(
+        { success: false, message: 'Request payload too large. Please reduce the size or number of files.' },
+        { status: 413 }
+      );
+    }
+    
     const files = formData.getAll('files') as File[];
     const folderPath = formData.get('folderPath') as string || '';
 

@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // For API routes in App Router, we handle body parsing in the route itself
+  // Size limits for API routes in App Router are managed per-route
 };
 
 export default nextConfig;
