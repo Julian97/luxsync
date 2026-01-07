@@ -16,6 +16,7 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
   const [error] = useState<string | null>(initialError);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [currentGallery] = useState<Gallery | null>(initialGallery);
+  const [isGalleryDownloading, setIsGalleryDownloading] = useState(false);
 
   const handlePhotoClick = (photo: Photo) => {
     setSelectedPhoto(photo);
@@ -25,7 +26,7 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
     setSelectedPhoto(null);
   };
 
-  const handleDownload = (photo: Photo) => {
+  const handleDownload = async (photo: Photo) => {
     // Create a temporary link and trigger download
     const link = document.createElement('a');
     link.href = photo.public_url;
@@ -41,6 +42,7 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
       return;
     }
     
+    setIsGalleryDownloading(true);
     try {
       // Create download URL using the gallery folder name
       const galleryFolderName = encodeURIComponent(currentGallery.folder_name);
@@ -51,6 +53,8 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
     } catch (error) {
       console.error('Error downloading gallery:', error);
       alert('Failed to download gallery');
+    } finally {
+      setIsGalleryDownloading(false);
     }
   };
 
@@ -79,11 +83,24 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
           <button
             onClick={handleDownloadGallery}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center mx-auto"
+            disabled={isGalleryDownloading}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download Gallery
+            {isGalleryDownloading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Downloading...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Gallery
+              </>
+            )}
           </button>
         </div>
       </div>
