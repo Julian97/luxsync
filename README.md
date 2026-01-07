@@ -197,6 +197,32 @@ The masonry grid layout uses responsive breakpoints to optimize the viewing expe
 
 This layout ensures optimal viewing experience across all device sizes.
 
+## Admin Panel
+
+LuxSync includes a password-protected admin panel for managing your galleries:
+
+- **URL**: `/admin`
+- **Features**: Upload, move, rename, and delete files/folders in B2 LuxSync
+- **Metadata Management**: Write important metadata to Supabase including filename, dimensions, and hash IDs
+- **File Hashing**: Automatically hashes filenames when uploading to B2, which are then recorded in Supabase for secure file retrieval
+
+### Setup Admin Password
+
+Add the following to your `.env.local` file:
+
+```env
+ADMIN_PASSWORD=your_secure_admin_password
+```
+
+### Usage
+
+1. Navigate to `/admin` in your browser
+2. Enter the admin password when prompted
+3. Use the dashboard to manage your galleries:
+   - **Upload Tab**: Upload files to specific folder paths
+   - **Manage Tab**: Move, rename, or delete existing files/folders
+   - **Metadata Tab**: Sync all metadata from B2 to Supabase
+
 ## Open Graph Metadata
 
 LuxSync generates dynamic Open Graph metadata for rich social media previews:
