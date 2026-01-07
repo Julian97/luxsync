@@ -6,6 +6,8 @@ import { isAdminAuthenticated } from '@/lib/admin-auth';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Starting upload request');
+    
     // Check if admin is authenticated (in a real app, you'd verify a session token)
     if (!process.env.ADMIN_PASSWORD) {
       return Response.json(
@@ -17,18 +19,22 @@ export async function POST(request: NextRequest) {
     let formData;
     try {
       // Parse form data for file uploads
+      console.log('Attempting to parse form data');
       formData = await request.formData();
+      console.log('Form data parsed successfully');
     } catch (error) {
       // Handle the case where form data parsing fails (e.g., payload too large)
       console.error('Error parsing form data:', error);
       return Response.json(
-        { success: false, message: 'Request payload too large. Please reduce the size or number of files (max 50MB total).' },
+        { success: false, message: 'Request payload too large. The server has a size limit (typically 4.5MB on free hosting tiers). Please reduce file sizes or contact the administrator to adjust server settings.' },
         { status: 413 }
       );
     }
     
     const files = formData.getAll('files') as File[];
     const folderPath = formData.get('folderPath') as string || '';
+
+    console.log(`Processing ${files.length} files for upload to path: ${folderPath}`);
 
     if (files.length === 0) {
       return Response.json(

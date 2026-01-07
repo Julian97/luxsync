@@ -233,6 +233,7 @@ function UploadTab() {
           className="w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-gray-700 text-white"
         />
         <p className="text-xs text-gray-400 mt-1">Max file size: 25MB per file, 50MB total per batch</p>
+        <p className="text-xs text-yellow-400 mt-1">Note: Large uploads may fail on free hosting tiers. Contact admin if uploads fail repeatedly.</p>
       </div>
       
       <button

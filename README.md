@@ -223,6 +223,14 @@ ADMIN_PASSWORD=your_secure_admin_password
    - **Manage Tab**: Move, rename, or delete existing files/folders
    - **Metadata Tab**: Sync all metadata from B2 to Supabase
 
+### Server Configuration for Large Files
+
+By default, serverless functions (like those on Vercel) have size limits that may restrict large file uploads (typically 4.5MB on Vercel's free tier). For larger files:
+
+- **On Vercel**: Consider upgrading your plan or configuring larger function limits
+- **Alternative hosting**: Ensure your hosting provider supports larger request body sizes
+- **File size limits**: The admin panel allows up to 25MB per file with a 50MB total batch limit, but server configuration may impose additional restrictions
+
 ## Open Graph Metadata
 
 LuxSync generates dynamic Open Graph metadata for rich social media previews:
