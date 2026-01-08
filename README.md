@@ -1,4 +1,142 @@
-# LuxSync - Client Photo Gallery Platform
+# LuxSync
+
+LuxSync is a secure photo gallery platform that seamlessly integrates Backblaze B2 storage with Supabase database management. It provides a password-protected admin panel for file management, automated metadata synchronization, and a user-friendly gallery interface.
+
+## Features
+
+- Password-protected admin panel for file management
+- Secure file upload, move, rename, and delete operations
+- Automated metadata extraction and database synchronization
+- Human-friendly file browsing interface
+- Gallery navigation system with clickable tabs
+- Comprehensive debugging and monitoring tools
+- Health and status dashboard with quick access to all pages
+
+## Debugging Tools
+
+LuxSync includes several debugging tools to help monitor and verify database writes:
+
+1. **Database Debug Page** (`/admin/db-debug`): View all data in the Supabase database including galleries, photos, and users
+2. **System Log Viewer** (`/admin/logs`): Monitor application logs and debug upload processes
+3. **Sync Verification Tool** (`/api/admin/sync-verify`): Analyze and synchronize data between B2 and Supabase
+4. **Status Dashboard** (`/status`): Health and status monitoring with quick access to all application pages
+
+These tools help ensure that uploaded files are properly written to the Supabase database.
+
+## Supabase Setup and Configuration
+
+To properly connect your LuxSync application to Supabase:
+
+1. **Environment Variables**:
+   - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL (e.g., `https://xxxxxx.supabase.co`)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key
+   - `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key (for server-side operations)
+
+2. **Database Tables** (automatically created by migrations):
+   - `users`: id, handle, display_name, instagram, created_at
+   - `galleries`: id, title, event_date, folder_name, cover_image_url, access_pin, created_at
+   - `photos`: id, gallery_id, user_tag_id, b2_file_key, public_url, optimized_url, width, height, created_at
+
+3. **Connection Method**:
+   - The application uses the official Supabase JavaScript client
+   - No need for direct PostgreSQL connections in your application code
+   - The Supabase client handles authentication and security automatically
+
+## How to Get Your Supabase Credentials
+
+To find your Supabase credentials:
+
+1. Go to your [Supabase Dashboard](https://supabase.com/dashboard/projects)
+2. Select your project
+3. Navigate to **Project Settings** > **API**
+4. Copy the following values:
+   - **Project URL** → Use as `NEXT_PUBLIC_SUPABASE_URL`
+   - **Anonymous Key** → Use as `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - **Service Role Key** → Use as `SUPABASE_SERVICE_ROLE_KEY`
+
+⚠️ **Important Security Note**: The Service Role Key bypasses Row Level Security (RLS) and should only be used on the server-side in your application.
+
+## How to Configure Backblaze B2
+
+To configure your Backblaze B2 bucket:
+
+1. Create a B2 bucket in your [Backblaze account](https://secure.backblaze.com/b2_buckets.htm)
+2. Create an application key with read/write permissions for your bucket
+3. Set the following environment variables:
+   - `B2_BUCKET_NAME`: Your B2 bucket name
+   - `B2_APPLICATION_KEY_ID`: Your B2 application key ID
+   - `B2_APPLICATION_KEY`: Your B2 application key
+   - `B2_ACCOUNT_ID`: Your B2 account ID
+   - `B2_PUBLIC_URL`: Your B2 download URL (e.g., `https://f003.backblazeb2.com`)
+   - `B2_BASE_PATH`: Subfolder in your bucket (default: `B2 LuxSync`)
+
+The application expects files to be organized in the format: `B2_BASE_PATH/gallery-name/username/filename.jpg`
+
+## Environment Variables
+
+Create a `.env.local` file in your project root with the following variables:
+
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Backblaze B2 Configuration
+B2_BUCKET_NAME=your_b2_bucket_name
+B2_APPLICATION_KEY_ID=your_b2_application_key_id
+B2_APPLICATION_KEY=your_b2_application_key
+B2_ACCOUNT_ID=your_b2_account_id
+B2_PUBLIC_URL=https://f003.backblazeb2.com
+B2_BASE_PATH=B2 LuxSync
+
+# Admin Password
+ADMIN_PASSWORD=your_secure_admin_password
+```
+
+## Setting Up the Admin Password
+
+To protect your admin panel:
+
+1. Set the `ADMIN_PASSWORD` environment variable to a secure password
+2. Access the admin panel at `/admin` and use this password to log in
+3. The admin panel allows you to:
+   - Upload files to B2 storage
+   - Move, rename, and delete files
+   - Manage galleries and users
+   - View database contents and logs
+   - Perform sync operations
+
+## Troubleshooting Database Issues
+
+If you notice that the database remains empty after uploading files to B2:
+
+1. **Verify Environment Variables**:
+   - Ensure all required Supabase environment variables are set correctly
+   - Check that your service role key has proper permissions
+   - Verify your Supabase project URL is correct
+
+2. **Check the Database Debug Page** (`/admin/db-debug`):
+   - Navigate to the admin panel
+   - Click on the "Debug" tab
+   - Click "Open Database Debug Page"
+   - Verify if galleries, photos, and users tables are populated
+
+3. **Analyze the Sync Status**:
+   - Go to the admin panel
+   - Click on the "Sync" tab
+   - Click "Analyze Sync Status (GET)" to see the comparison between B2 and database
+   - Review any discrepancies reported
+
+4. **Force Sync if Needed**:
+   - If the database is empty despite files in B2
+   - Click "Force Sync All Files (POST)" in the Sync tab
+   - This will scan all B2 files and create corresponding database entries
+
+5. **Monitor Upload Logs**:
+   - Use the "Logs" tab in admin panel
+   - Check for successful photo insertions in the logs
+   - Look for messages like "Successfully inserted photo record" - Client Photo Gallery Platform
 
 A Next.js-based photo gallery platform that integrates with Supabase for database management and Backblaze B2 for image storage.
 

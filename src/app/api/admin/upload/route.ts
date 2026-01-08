@@ -99,12 +99,15 @@ export async function POST(request: NextRequest) {
           console.error('Error finding gallery:', galleryError);
           errors.push(`Failed to find or create gallery ${galleryName}: ${galleryError.message}`);
         } else if (existingGallery) {
+          console.log(`Found existing gallery:`, existingGallery);
           gallery = existingGallery;
         } else {
           // Create new gallery if it doesn't exist
           const galleryTitle = galleryName.replace(/[_-]/g, ' ');
           const dateMatch = galleryName.match(/^(\d{4}[-_]\d{2}[-_]\d{2})/);
           const eventDate = dateMatch ? dateMatch[1].replace(/_/g, '-') : new Date().toISOString().split('T')[0];
+          
+          console.log(`Creating new gallery with title: ${galleryTitle}, date: ${eventDate}, folder_name: ${galleryName}`);
           
           const { data: newGallery, error: createError } = await supabase
             .from('galleries')
@@ -120,6 +123,7 @@ export async function POST(request: NextRequest) {
             console.error('Error creating gallery:', createError);
             errors.push(`Failed to create gallery ${galleryName}: ${createError.message}`);
           } else {
+            console.log(`Successfully created gallery:`, newGallery);
             gallery = newGallery;
           }
         }
@@ -138,9 +142,12 @@ export async function POST(request: NextRequest) {
           console.error('Error finding user:', userError);
           errors.push(`Failed to find or create user ${userHandle}: ${userError.message}`);
         } else if (existingUser) {
+          console.log(`Found existing user:`, existingUser);
           user = existingUser;
         } else {
           // Create new user if it doesn't exist
+          console.log(`Creating new user with handle: ${userHandle}`);
+          
           const { data: newUser, error: createUserError } = await supabase
             .from('users')
             .insert([{
@@ -154,6 +161,7 @@ export async function POST(request: NextRequest) {
             console.error('Error creating user:', createUserError);
             errors.push(`Failed to create user ${userHandle}: ${createUserError.message}`);
           } else {
+            console.log(`Successfully created user:`, newUser);
             user = newUser;
           }
         }
@@ -162,7 +170,9 @@ export async function POST(request: NextRequest) {
         if (gallery) {
           const publicUrl = b2Service.getPublicUrl(b2Path);
           
-          const { error: photoError } = await supabase
+          console.log(`Inserting photo record for file: ${file.name}, gallery_id: ${gallery.id}, user_tag_id: ${user?.id}`);
+          
+          const { error: photoError, data: photoData } = await supabase
             .from('photos')
             .insert([{
               gallery_id: gallery.id,
@@ -171,11 +181,14 @@ export async function POST(request: NextRequest) {
               public_url: publicUrl,
               width,
               height,
-            }]);
+            }])
+            .select(); // Return inserted data for verification
             
           if (photoError) {
             console.error('Error inserting photo:', photoError);
             errors.push(`Failed to save metadata for ${file.name}: ${photoError.message}`);
+          } else {
+            console.log(`Successfully inserted photo record:`, photoData);
           }
         } else {
           console.error('Gallery not found, skipping photo insertion');

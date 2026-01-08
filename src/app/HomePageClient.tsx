@@ -108,6 +108,19 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
           >
             View All Galleries
           </a>
+          <a 
+            href="/admin/db-debug"
+            target="_blank"
+            className="text-green-600 hover:text-green-800 underline"
+          >
+            Database Debug
+          </a>
+          <a 
+            href="/status"
+            className="text-purple-600 hover:text-purple-800 underline"
+          >
+            Status Dashboard
+          </a>
         </div>
       </div>
       

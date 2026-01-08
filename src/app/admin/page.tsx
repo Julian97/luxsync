@@ -103,7 +103,7 @@ function AdminDashboard() {
 
           <div className="border-b border-gray-700 mb-6">
             <nav className="flex space-x-8">
-              {['upload', 'manage', 'metadata'].map((tab) => (
+              {['upload', 'manage', 'metadata', 'debug', 'logs', 'sync'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -122,6 +122,9 @@ function AdminDashboard() {
           {activeTab === 'upload' && <UploadTab />}
           {activeTab === 'manage' && <ManageTab />}
           {activeTab === 'metadata' && <MetadataTab />}
+          {activeTab === 'debug' && <DebugTab />}
+          {activeTab === 'logs' && <LogsTab />}
+          {activeTab === 'sync' && <SyncTab />}
         </div>
       </div>
     </div>
@@ -421,6 +424,92 @@ function ManageTab() {
           {message}
         </div>
       )}
+    </div>
+  );
+}
+
+function DebugTab() {
+  return (
+    <div className="space-y-4">
+      <div className="bg-blue-900 border border-blue-700 rounded-md p-4">
+        <p className="text-blue-200">
+          Database Debug Tool - View and verify all data in the Supabase database including galleries, photos, and users.
+        </p>
+      </div>
+      
+      <a
+        href="/admin/db-debug"
+        target="_blank"
+        className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+      >
+        Open Database Debug Page
+      </a>
+      
+      <p className="text-gray-400 text-sm">
+        Note: This opens in a new tab to allow you to check database contents before and after operations.
+      </p>
+    </div>
+  );
+}
+
+function LogsTab() {
+  return (
+    <div className="space-y-4">
+      <div className="bg-purple-900 border border-purple-700 rounded-md p-4">
+        <p className="text-purple-200">
+          System Log Viewer - Monitor application logs and debug upload processes.
+        </p>
+      </div>
+      
+      <a
+        href="/admin/logs"
+        target="_blank"
+        className="inline-block bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700"
+      >
+        Open Log Viewer
+      </a>
+      
+      <p className="text-gray-400 text-sm">
+        Note: This opens in a new tab to allow you to monitor logs during operations.
+      </p>
+    </div>
+  );
+}
+
+function SyncTab() {
+  return (
+    <div className="space-y-4">
+      <div className="bg-yellow-900 border border-yellow-700 rounded-md p-4">
+        <p className="text-yellow-200">
+          Database Sync Verification - Analyze and synchronize data between B2 and Supabase.
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a
+          href="/api/admin/sync-verify"
+          target="_blank"
+          className="inline-block bg-yellow-600 text-white px-4 py-2 rounded-md hover:bg-yellow-700"
+        >
+          Analyze Sync Status (GET)
+        </a>
+        <a
+          href="/api/admin/sync-verify"
+          target="_blank"
+          className="inline-block bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+          onClick={(e) => {
+            if (!confirm('This will force sync ALL B2 files to the database. Continue?')) {
+              e.preventDefault();
+            }
+          }}
+        >
+          Force Sync All Files (POST)
+        </a>
+      </div>
+      
+      <p className="text-gray-400 text-sm">
+        Note: These links open API endpoints in new tabs. GET analyzes, POST forces full sync.
+      </p>
     </div>
   );
 }
