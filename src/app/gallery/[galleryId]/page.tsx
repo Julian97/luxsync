@@ -1,9 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getGalleryByFolderName } from '@/utils/supabase/server';
-import { getPhotosByGallery } from '@/utils/supabase/server';
+import { getGalleryByFolderName, getPhotosByGallery, createClient } from '@/utils/supabase/server';
 
-import MasonryGallery from '@/components/MasonryGallery';
 import GalleryPageClient from './GalleryPageClient';
 import { Photo, Gallery } from '@/types/database';
 
@@ -15,8 +13,26 @@ interface GalleryPageProps {
 
 export async function generateMetadata({ params }: { params: { galleryId: string } }): Promise<Metadata> {
   try {
-    const galleryId = decodeURIComponent(params.galleryId);
-    const gallery = await getGalleryByFolderName(galleryId);
+    const galleryIdentifier = decodeURIComponent(params.galleryId);
+    
+    // Try to get gallery by folder name first (most common case)
+    let gallery = await getGalleryByFolderName(galleryIdentifier);
+    
+    // If not found by folder name, try to get by ID
+    if (!gallery) {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('galleries')
+        .select('*')
+        .eq('id', galleryIdentifier)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching gallery by ID:', error);
+        return {};
+      }
+      gallery = data;
+    }
     
     if (!gallery) {
       return {};
@@ -57,11 +73,28 @@ export async function generateMetadata({ params }: { params: { galleryId: string
 }
 
 export default async function GalleryPage({ params }: GalleryPageProps) {
-  const galleryId = decodeURIComponent(params.galleryId);
+  const galleryIdentifier = decodeURIComponent(params.galleryId);
   
   try {
-    // Fetch gallery and photos server-side
-    const gallery = await getGalleryByFolderName(galleryId);
+    // Try to get gallery by folder name first (most common case)
+    let gallery = await getGalleryByFolderName(galleryIdentifier);
+    
+    // If not found by folder name, try to get by ID
+    if (!gallery) {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('galleries')
+        .select('*')
+        .eq('id', galleryIdentifier)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching gallery by ID:', error);
+        notFound();
+      } else {
+        gallery = data;
+      }
+    }
     
     if (!gallery) {
       notFound();
@@ -81,4 +114,3 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     );
   }
 }
-

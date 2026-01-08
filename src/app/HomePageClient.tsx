@@ -103,7 +103,7 @@ export default function HomePageClient({ initialPhotos, initialGallery, initialE
             )}
           </button>
           <a 
-            href="/galleries" 
+            href="/galleries"
             className="text-blue-600 hover:text-blue-800 underline"
           >
             View All Galleries
